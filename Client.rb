@@ -1,5 +1,6 @@
 require 'rest_client'
 
 RestClient.post( 'http://localhost:8000',
-  :upload => { :file => File.new('C:\Temp\key.txt', 'rb')}
+  :upload => File.new('C:\Temp\key.txt', 'rb'),
+  :path => 'Temp\key.txt'
 )
