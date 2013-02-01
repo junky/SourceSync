@@ -38,13 +38,21 @@ def ignore_path?(path)
   return false
 end
 
+@run_files_update = true
+ARGV.each do|a|
+  @run_files_update = false if a.eql? "--reset_timestamp" 
+end
+
 last_mtime = get_last_modification_time
 set_last_modification_time
 
-file_paths = []
-Find.find('.') do |path|
-  file_paths << path if not File.directory?(path) and not ignore_path?(path) and file_modified?(path, last_mtime)
+if @run_files_update
+  file_paths = []
+  Find.find('.') do |path|
+    file_paths << path if not File.directory?(path) and not ignore_path?(path) and file_modified?(path, last_mtime)
+  end
+  
+  file_paths.each {|path| send_file(path)}
+  puts file_paths
 end
-
-file_paths.each {|path| send_file(path)}
 
