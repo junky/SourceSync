@@ -30,16 +30,11 @@ class SourceCodeServlet < WEBrick::HTTPServlet::AbstractServlet
     end
     content_file = filedata['upload']
       
-#    puts @@path_prefix
-#    puts "----------"
-#    puts content_file
-#    puts "----------"
-#    content_file.delete("\r").each_byte {|c| print c, ' ' }
     
     FileUtils.mkdir_p(File.dirname(path))
           
     file = File.new(path, "w")
-    file.write(content_file.delete("\r"))
+    file.write(content_file)
     file.close()
                 
     response.status = 200
@@ -56,9 +51,5 @@ server.mount "/", SourceCodeServlet
 
 trap("INT"){ server.shutdown }
 
-#WEBrick::Daemon.start
+WEBrick::Daemon.start
 server.start
-
-#https://github.com/betten/SoundCloud-Developer-Challenge/blob/master/server.rb
-#
-#
