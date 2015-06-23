@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
-	"path/filepath"
 	"os"
+	"path/filepath"
 
 	"github.com/go-fsnotify/fsnotify"
 )
@@ -40,17 +40,16 @@ func ExampleNewWatcher() {
 
 func ScanAllFiles(location string) (err error) {
 
-    var scan = func(path string, fileInfo os.FileInfo, inpErr error) (err error) {
-	if fileInfo.IsDir() {
-		fmt.Println(path)
+	var scan = func(path string, fileInfo os.FileInfo, inpErr error) (err error) {
+		if fileInfo.IsDir() {
+			fmt.Println(path)
+		}
+		return
 	}
+
+	err = filepath.Walk(location, scan)
+
 	return
-    }
-
-
-    err = filepath.Walk(location, scan)
-
-    return
 }
 
 func main() {
