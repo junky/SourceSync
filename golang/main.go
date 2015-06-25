@@ -38,22 +38,26 @@ func ExampleNewWatcher() {
 	<-done
 }
 
-func ScanAllFiles(location string) (err error) {
-
+func ScanAllFiles(location string) (err error, res []string) {
 	var scan = func(path string, fileInfo os.FileInfo, inpErr error) (err error) {
+		if inpErr!=nil {
+			fmt.Println(inpErr)
+		}
 		if fileInfo.IsDir() {
-			fmt.Println(path)
+			res = append(res, path)
 		}
 		return
 	}
 
 	err = filepath.Walk(location, scan)
-
 	return
 }
 
 func main() {
-	fmt.Println("Hello, Alex")
-	ScanAllFiles("D:\\Junky\\Projects\\SmartLing\\SourceSync\\golang\\")
-	ExampleNewWatcher()
+
+	_,folders := ScanAllFiles("C:\\Temp")
+
+	for _,folder := range folders {
+		fmt.Println(folder)
+	}
 }
