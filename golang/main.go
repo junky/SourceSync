@@ -40,7 +40,7 @@ func ExampleNewWatcher() {
 
 func ScanAllFiles(location string) (err error, res []string) {
 	var scan = func(path string, fileInfo os.FileInfo, inpErr error) (err error) {
-		if inpErr!=nil {
+		if inpErr != nil {
 			fmt.Println(inpErr)
 		}
 		if fileInfo.IsDir() {
@@ -55,9 +55,9 @@ func ScanAllFiles(location string) (err error, res []string) {
 
 func main() {
 
-	_,folders := ScanAllFiles("C:\\Temp")
+	_, folders := ScanAllFiles("C:\\Temp")
 
-	for _,folder := range folders {
+	for _, folder := range folders {
 		fmt.Println(folder)
 	}
 }
