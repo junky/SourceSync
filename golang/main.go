@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/dmotylev/goproperties"
 	"github.com/go-fsnotify/fsnotify"
 )
 
@@ -38,7 +39,7 @@ func ExampleNewWatcher() {
 	<-done
 }
 
-func ScanAllFiles(location string) (err error, res []string) {
+func ScanAllFiles(location string) (res []string, err error) {
 	var scan = func(path string, fileInfo os.FileInfo, inpErr error) (err error) {
 		if inpErr != nil {
 			fmt.Println(inpErr)
@@ -53,11 +54,26 @@ func ScanAllFiles(location string) (err error, res []string) {
 	return
 }
 
+func GetSyncFolder() (folder string, err error) {
+	current_folder, err := os.Getwd()
+	if nil != err {
+		return
+	}
+
+	p, _ := properties.Load(current_folder + "/sync.settings")
+	folder = p.String("path", "")
+
+	return
+}
+
 func main() {
 
-	_, folders := ScanAllFiles("C:\\Temp")
+	sync_folder, _ := GetSyncFolder()
+	folders, _ := ScanAllFiles(sync_folder)
 
 	for _, folder := range folders {
 		fmt.Println(folder)
 	}
+
+	fmt.Println("Sync Folder:" + sync_folder)
 }
