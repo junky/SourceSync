@@ -4,39 +4,25 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"path/filepath"
 
 	"github.com/dmotylev/goproperties"
 	"github.com/go-fsnotify/fsnotify"
 )
 
-func ExampleNewWatcher() {
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer watcher.Close()
-
-	done := make(chan bool)
-	go func() {
-		for {
-			select {
-			case event := <-watcher.Events:
-				log.Println("event:", event)
-				if event.Op&fsnotify.Write == fsnotify.Write {
-					log.Println("modified file:", event.Name)
-				}
-			case err := <-watcher.Errors:
-				log.Println("error:", err)
+func ProcessEvents(watcher *fsnotify.Watcher) {
+	for {
+		select {
+		case event := <-watcher.Events:
+			log.Println("event:", event)
+			if event.Op&fsnotify.Write == fsnotify.Write {
+				log.Println("modified file:", event.Name)
 			}
+		case err := <-watcher.Errors:
+			log.Println("error:", err)
 		}
-	}()
-
-	err = watcher.Add("D:\\Junky\\Projects\\SmartLing\\SourceSync\\golang")
-	if err != nil {
-		log.Fatal(err)
 	}
-	<-done
 }
 
 func ScanAllFiles(location string) (res []string, err error) {
@@ -76,4 +62,24 @@ func main() {
 	}
 
 	fmt.Println("Sync Folder:" + sync_folder)
+
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer watcher.Close()
+
+	go ProcessEvents(watcher)
+
+	for _, folder := range folders {
+		err = watcher.Add(folder)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	// kill event, ctrl+c
+	onkill := make(chan os.Signal, 1)
+	signal.Notify(onkill, os.Interrupt, os.Kill)
+	<-onkill
 }
