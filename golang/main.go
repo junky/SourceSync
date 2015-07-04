@@ -1,26 +1,26 @@
 package main
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
 
 	"github.com/dmotylev/goproperties"
 	"github.com/go-fsnotify/fsnotify"
+
+	"./logger"
 )
 
 func ProcessEvents(watcher *fsnotify.Watcher) {
 	for {
 		select {
 		case event := <-watcher.Events:
-			log.Println("event:", event)
+			logger.Println("event:", event)
 			if event.Op&fsnotify.Write == fsnotify.Write {
-				log.Println("modified file:", event.Name)
+				logger.Println("modified file:", event.Name)
 			}
 		case err := <-watcher.Errors:
-			log.Println("error:", err)
+			logger.Println("error:", err)
 		}
 	}
 }
@@ -28,7 +28,7 @@ func ProcessEvents(watcher *fsnotify.Watcher) {
 func ScanAllFiles(location string) (res []string, err error) {
 	var scan = func(path string, fileInfo os.FileInfo, inpErr error) (err error) {
 		if inpErr != nil {
-			fmt.Println(inpErr)
+			logger.Println(inpErr)
 		}
 		if fileInfo.IsDir() {
 			res = append(res, path)
@@ -53,28 +53,28 @@ func GetSyncFolder() (folder string, err error) {
 }
 
 func main() {
+	logger.SetOutputFile("logs/sync.log")
+
+	logger.Println("Starting SourceSync ...")
 
 	sync_folder, _ := GetSyncFolder()
-	folders, _ := ScanAllFiles(sync_folder)
-
-	for _, folder := range folders {
-		fmt.Println(folder)
-	}
-
-	fmt.Println("Sync Folder:" + sync_folder)
+	logger.Println("Sync Folder:" + sync_folder)
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 	defer watcher.Close()
+	defer logger.Close()
 
 	go ProcessEvents(watcher)
 
+	folders, _ := ScanAllFiles(sync_folder)
 	for _, folder := range folders {
+		logger.Println("Watching folder: " + folder)
 		err = watcher.Add(folder)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal(err)
 		}
 	}
 
@@ -82,4 +82,6 @@ func main() {
 	onkill := make(chan os.Signal, 1)
 	signal.Notify(onkill, os.Interrupt, os.Kill)
 	<-onkill
+
+	logger.Println("Stoping SourceSync ...")
 }
