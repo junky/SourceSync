@@ -1,13 +1,21 @@
 package main
 
 import (
+	"io/ioutil"
+	"os"
 	"testing"
 )
 
-func TestTests(t *testing.T) {
-	//	t.Fail()
+func ClearTestsFolder() {
+	os.RemoveAll("tests")
 }
 
-func TestTest2(t *testing.T) {
-	//	t.Fail()
+func CreateTestsFolder() {
+	os.MkdirAll("tests/Folder-1", 0777)
+	ioutil.WriteFile("tests/Folder-1/test1.txt", []byte("text"), 0666)
+}
+
+func TestFSEvents(t *testing.T) {
+	ClearTestsFolder()
+	CreateTestsFolder()
 }
