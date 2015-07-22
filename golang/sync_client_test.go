@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 	"testing"
 	"time"
 )
@@ -27,32 +28,58 @@ func BuildClient() {
 	}
 }
 
-func TestFSEvents(t *testing.T) {
-	ClearTestsFolder()
-	CreateTestsFolder()
-	BuildClient()
-
+func RunClient(output chan string) *exec.Cmd {
 	cmd := exec.Command("./sync_client")
 	stdout, _ := cmd.StdoutPipe()
 
 	buff := bufio.NewScanner(stdout)
 	go func() {
 		for buff.Scan() {
-			fmt.Printf("Stdout: %s\n", buff.Text())
+			output <- buff.Text()
 		}
 	}()
 
 	if err := cmd.Start(); err != nil {
 		log.Fatal(err)
 	}
+	return cmd
+}
 
-	time.Sleep(1000 * time.Millisecond)
-
-	fmt.Println("Kill")
+func KillClient(cmd *exec.Cmd) {
 	if err := cmd.Process.Kill(); err != nil {
 		log.Fatal("failed to kill: ", err)
 	}
-
 	cmd.Wait()
+}
 
+func ValidateOutput(output chan string, t *testing.T) {
+	var s string
+
+	s = <-output
+	fmt.Println(s)
+	if !strings.HasSuffix(s, "Starting SourceSync ...") {
+		t.Fatal("Starting SourceSync ... not found")
+	}
+
+	s = <-output
+	fmt.Println(s)
+	if !strings.HasSuffix(s, "/tests") || !strings.Contains(s, "Sync Folder:") {
+		t.Fatal("Starting SourceSync ... not found")
+	}
+
+}
+
+func TestFSEvents(t *testing.T) {
+	ClearTestsFolder()
+	CreateTestsFolder()
+	BuildClient()
+
+	output := make(chan string)
+
+	go ValidateOutput(output, t)
+
+	cmd := RunClient(output)
+
+	time.Sleep(100 * time.Millisecond)
+	KillClient(cmd)
 }
