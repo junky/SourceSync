@@ -38,6 +38,8 @@ def ignore_path?(path)
   return false
 end
 
+Dir.chdir(File.expand_path(File.dirname(__FILE__)))
+
 @run_files_update = true
 ARGV.each do|a|
   @run_files_update = false if a.eql? "--reset_timestamp" 
