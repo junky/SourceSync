@@ -1,4 +1,4 @@
-require 'rest_client'
+require 'rest-client'
 require 'find'
 
 @ignore_paths = []
