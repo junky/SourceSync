@@ -54,7 +54,8 @@ if @run_files_update
     file_paths << path if not File.directory?(path) and not ignore_path?(path) and file_modified?(path, last_mtime)
   end
   
-  file_paths.each {|path| send_file(path)}
-  puts file_paths
+  file_paths.each {|path|
+      send_file(path)
+      puts Time.now.strftime("%Y-%m-%d %H:%M:%S") + " : " + path
+  }
 end
-
